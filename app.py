@@ -3,7 +3,7 @@
     st.divider()
     
     st.header("ℹ️ Acerca de")
-    st.markdown("""
+    st.markdown(""
     Sistema de logica subatomica con tableaux semanticos.
     
     **Caracteristicas:**
@@ -13,7 +13,7 @@
     - Relaciones Q (ternaria) y S (binaria)
     
     **Version:** 1.0
-    """)
+    "")
 
 tab1, tab2, tab3 = st.tabs(["🧪 Probar Formula", "📜 Probar Argumento", "📚 Ejemplos"])
 
