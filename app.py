@@ -4,30 +4,30 @@
     
     st.header("ℹ️ Acerca de")
     st.markdown("""
-    Sistema de lógica subatómica con tableaux semánticos.
+    Sistema de logica subatomica con tableaux semanticos.
     
-    **Características:**
+    **Caracteristicas:**
     - Cuantificadores universales y particulares
-    - Operadores de complemento y privación
-    - Conectivos proposicionales clásicos
+    - Operadores de complemento y privacion
+    - Conectivos proposicionales clasicos
     - Relaciones Q (ternaria) y S (binaria)
     
-    **Versión:** 1.0
+    **Version:** 1.0
     """)
 
-tab1, tab2, tab3 = st.tabs(["🧪 Probar Fórmula", "📜 Probar Argumento", "📚 Ejemplos"])
+tab1, tab2, tab3 = st.tabs(["🧪 Probar Formula", "📜 Probar Argumento", "📚 Ejemplos"])
 
 with tab1:
-    st.header("Probar Validez de una Fórmula")
-    st.markdown("Ingresa una fórmula para verificar si es válida (tautología).")
+    st.header("Probar Validez de una Formula")
+    st.markdown("Ingresa una formula para verificar si es valida (tautologia).")
     
     col1, col2 = st.columns([3, 1])
     
     with col1:
         formula_input = st.text_input(
-            "Fórmula:",
+            "Formula:",
             value="A | -A",
-            help="Escribe la fórmula usando la sintaxis de la guía"
+            help="Escribe la formula usando la sintaxis de la guia"
         )
     
     with col2:
@@ -39,7 +39,7 @@ with tab1:
         try:
             parsed = parse(formula_input)
             
-            st.markdown("### Fórmula Parseada")
+            st.markdown("### Formula Parseada")
             st.markdown(f'<div class="formula-box">{parsed}</div>', unsafe_allow_html=True)
             
             old_stdout = sys.stdout
@@ -55,12 +55,12 @@ with tab1:
             
             if result:
                 st.markdown(
-                    '<div class="result-valid">✓ La fórmula es VÁLIDA (Tautología)</div>',
+                    '<div class="result-valid">✓ La formula es VALIDA (Tautologia)</div>',
                     unsafe_allow_html=True
                 )
             else:
                 st.markdown(
-                    '<div class="result-invalid">✗ La fórmula NO es válida</div>',
+                    '<div class="result-invalid">✗ La formula NO es valida</div>',
                     unsafe_allow_html=True
                 )
             
@@ -70,19 +70,19 @@ with tab1:
                     st.text(output)
         
         except ParseError as e:
-            st.error(f"❌ Error al parsear la fórmula: {str(e)}")
-            st.info("💡 Revisa la sintaxis en la guía de la barra lateral.")
+            st.error(f"❌ Error al parsear la formula: {str(e)}")
+            st.info("💡 Revisa la sintaxis en la guia de la barra lateral.")
         except Exception as e:
             st.error(f"❌ Error inesperado: {str(e)}")
             st.exception(e)
 
 with tab2:
     st.header("Probar Validez de un Argumento")
-    st.markdown("Ingresa premisas y conclusión para verificar si el argumento es válido.")
+    st.markdown("Ingresa premisas y conclusion para verificar si el argumento es valido.")
     
     st.markdown("#### Premisas")
     
-    num_premises = st.number_input("Número de premisas:", min_value=1, max_value=10, value=2)
+    num_premises = st.number_input("Numero de premisas:", min_value=1, max_value=10, value=2)
     
     premises_input = []
     for i in range(num_premises):
@@ -90,8 +90,8 @@ with tab2:
         premise = st.text_input(f"Premisa {i+1}:", key=f"premise_{i}", value=default_val)
         premises_input.append(premise)
     
-    st.markdown("#### Conclusión")
-    conclusion_input = st.text_input("Conclusión:", value="[A]C")
+    st.markdown("#### Conclusion")
+    conclusion_input = st.text_input("Conclusion:", value="[A]C")
     
     col1, col2 = st.columns([3, 1])
     
@@ -111,7 +111,7 @@ with tab2:
             for i, (p_str, p_parsed) in enumerate(zip(premises_input, parsed_premises), 1):
                 st.markdown(f'{i}. <div class="formula-box">{p_parsed}</div>', unsafe_allow_html=True)
             
-            st.markdown(f'**Conclusión:** <div class="formula-box">{parsed_conclusion}</div>', unsafe_allow_html=True)
+            st.markdown(f'**Conclusion:** <div class="formula-box">{parsed_conclusion}</div>', unsafe_allow_html=True)
             
             old_stdout = sys.stdout
             sys.stdout = captured_output = StringIO()
@@ -126,12 +126,12 @@ with tab2:
             
             if result:
                 st.markdown(
-                    '<div class="result-valid">✓ El argumento es VÁLIDO</div>',
+                    '<div class="result-valid">✓ El argumento es VALIDO</div>',
                     unsafe_allow_html=True
                 )
             else:
                 st.markdown(
-                    '<div class="result-invalid">✗ El argumento NO es válido</div>',
+                    '<div class="result-invalid">✗ El argumento NO es valido</div>',
                     unsafe_allow_html=True
                 )
             
@@ -142,15 +142,15 @@ with tab2:
         
         except ParseError as e:
             st.error(f"❌ Error al parsear: {str(e)}")
-            st.info("💡 Revisa la sintaxis en la guía.")
+            st.info("💡 Revisa la sintaxis en la guia.")
         except Exception as e:
             st.error(f"❌ Error inesperado: {str(e)}")
             st.exception(e)
 
 with tab3:
-    st.header("Ejemplos de Silogismos y Fórmulas")
+    st.header("Ejemplos de Silogismos y Formulas")
     
-    st.markdown("### Silogismos Clásicos")
+    st.markdown("### Silogismos Clasicos")
     
     examples = {
         "Barbara": {
@@ -161,17 +161,17 @@ with tab3:
         "Celarent": {
             "premises": ["-<M>P", "[S]M"],
             "conclusion": "-<S>P",
-            "description": "Ningún M es P, Todo S es M ⊢ Ningún S es P"
+            "description": "Ningun M es P, Todo S es M ⊢ Ningun S es P"
         },
         "Darii": {
             "premises": ["[M]P", "<S>M"],
             "conclusion": "<S>P",
-            "description": "Todo M es P, Algún S es M ⊢ Algún S es P"
+            "description": "Todo M es P, Algun S es M ⊢ Algun S es P"
         },
         "Ferio": {
             "premises": ["-<M>P", "<S>M"],
             "conclusion": "<S>~P",
-            "description": "Ningún M es P, Algún S es M ⊢ Algún S es no-P"
+            "description": "Ningun M es P, Algun S es M ⊢ Algun S es no-P"
         },
     }
     
@@ -181,7 +181,7 @@ with tab3:
             for i, p in enumerate(example['premises'], 1):
                 st.code(p, language=None)
             
-            st.markdown("**Conclusión:**")
+            st.markdown("**Conclusion:**")
             st.code(example['conclusion'], language=None)
             
             if st.button(f"Probar {name}", key=f"example_{name}"):
@@ -194,22 +194,22 @@ with tab3:
                         result = prover.prove_argument(parsed_premises, parsed_conclusion, verbose=False)
                     
                     if result:
-                        st.success(f"✓ {name} es VÁLIDO")
+                        st.success(f"✓ {name} es VALIDO")
                     else:
-                        st.warning(f"✗ {name} NO es válido en este sistema")
+                        st.warning(f"✗ {name} NO es valido en este sistema")
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
     
     st.divider()
     
-    st.markdown("### Fórmulas Lógicas Clásicas")
+    st.markdown("### Formulas Logicas Clasicas")
     
     logic_examples = {
         "Ley del Tercero Excluido": "A | -A",
-        "Ley de No Contradicción": "-(A & -A)",
+        "Ley de No Contradiccion": "-(A & -A)",
         "Modus Ponens": "(A & (A -> B)) -> B",
         "Modus Tollens": "((A -> B) & -B) -> -A",
-        "Silogismo Hipotético": "((A -> B) & (B -> C)) -> (A -> C)",
+        "Silogismo Hipotetico": "((A -> B) & (B -> C)) -> (A -> C)",
         "Dilema Constructivo": "((A -> B) & (C -> D) & (A | C)) -> (B | D)",
     }
     
@@ -225,16 +225,16 @@ with tab3:
                         result = prover.prove(parsed, verbose=False)
                     
                     if result:
-                        st.success(f"✓ {name} es VÁLIDO")
+                        st.success(f"✓ {name} es VALIDO")
                     else:
-                        st.warning(f"✗ {name} NO es válido")
+                        st.warning(f"✗ {name} NO es valido")
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
 
 st.divider()
 st.markdown("""
 <div style="text-align: center; color: #666; font-size: 0.9rem;">
-    Lógica Subatómica - Probador de Teoremas | Versión 1.0<br>
-    Sistema de tableaux semánticos para lógica con cuantificadores y operadores de término
+    Logica Subatomica - Probador de Teoremas | Version 1.0<br>
+    Sistema de tableaux semanticos para logica con cuantificadores y operadores de termino
 </div>
 """, unsafe_allow_html=True)
