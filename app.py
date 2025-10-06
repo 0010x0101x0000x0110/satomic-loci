@@ -1,19 +1,23 @@
+import streamlit as st
+import sys
+from io import StringIO
+from logic import parse, ParseError, TableauProver
 
-    
-    st.divider()
-    
-    st.header("ℹ️ Acerca de")
-    st.markdown(""
-    Sistema de logica subatomica con tableaux semanticos.
-    
-    **Caracteristicas:**
-    - Cuantificadores universales y particulares
-    - Operadores de complemento y privacion
-    - Conectivos proposicionales clasicos
-    - Relaciones Q (ternaria) y S (binaria)
-    
-    **Version:** 1.0
-    "")
+st.divider()
+
+st.header("ℹ️ Acerca de")
+st.markdown("""
+Sistema de lógica subatómica con tableaux semánticos.
+
+**Características:**
+- Cuantificadores universales y particulares  
+- Operadores de complemento y privación  
+- Conectivos proposicionales clásicos  
+- Relaciones Q (ternaria) y S (binaria)
+
+**Versión:** 1.0
+""")
+
 
 tab1, tab2, tab3 = st.tabs(["🧪 Probar Formula", "📜 Probar Argumento", "📚 Ejemplos"])
 
