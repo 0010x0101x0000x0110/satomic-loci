@@ -236,9 +236,10 @@ with tab3:
                     st.error(f"Error: {str(e)}")
 
 st.divider()
-st.markdown(""
+
+st.markdown("""
 <div style="text-align: center; color: #666; font-size: 0.9rem;">
-    Logica Subatomica - Probador de Teoremas | Version 1.0<br>
-    Sistema de tableaux semanticos para logica con cuantificadores y operadores de termino
+    Lógica Subatómica - Probador de Teoremas | Versión 1.0<br>
+    Sistema de tableaux semánticos para lógica con cuantificadores y operadores de término
 </div>
-"", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
