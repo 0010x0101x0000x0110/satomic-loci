@@ -1296,15 +1296,16 @@ ALL_RULES = [
 class TableauProver:
     """Motor que aplica reglas automaticamente"""
     
-    def __init__(self, rules=None, max_iterations=100):
+    def __init__(self, rules=None, max_iterations=200):
         self.rules = rules if rules else ALL_RULES
         self.max_iterations = max_iterations
         self.applied_rules = []
+        self.applied_formulas = set()  # Para evitar aplicar la misma regla dos veces
     
     def apply_existential_restriction(self, branch, tableau):
         """
         Restriccion existencial: cuando no hay reglas aplicables,
-        para cada Qxyz existente, agregar terminos del contexto.
+        para cada Qxyz existente, agregar terminos del contexto en y o z.
         Retorna True si se aplico algo.
         """
         relations = branch.get_all_relations()
@@ -1339,7 +1340,6 @@ class TableauProver:
                 )
                 
                 if not exists_in_y:
-                    # Agregar el termino en el estado y
                     branch.add_formula(Existential(term), rel.y)
                     return True
                 
@@ -1352,7 +1352,6 @@ class TableauProver:
                 )
                 
                 if not exists_in_z:
-                    # Agregar el termino en el estado z
                     branch.add_formula(Existential(term), rel.z)
                     return True
         
