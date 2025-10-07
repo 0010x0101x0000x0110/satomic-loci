@@ -1493,3 +1493,156 @@ if __name__ == "__main__":
     print("Sistema listo. Para usar la interfaz web, ejecuta:")
     print("  streamlit run app.py")
     print("="*60)
+terms_in_context.add(f.predicate)
+            elif isinstance(f, Particular):
+                terms_in_context.add(f.subject)
+                terms_in_context.add(f.predicate)
+        
+        # Para cada relacion Q, intentar agregar terminos
+        for rel in q_relations:
+            for term in terms_in_context:
+                # Verificar si ya existe este termino en el estado y
+                exists_in_y = any(
+                    isinstance(lf.formula, Existential) and 
+                    lf.formula.term == term and 
+                    lf.state == rel.y
+                    for lf in formulas
+                )
+                
+                if not exists_in_y:
+                    branch.add_formula(Existential(term), rel.y)
+                    return True
+                
+                # Tambien intentar en z
+                exists_in_z = any(
+                    isinstance(lf.formula, Existential) and 
+                    lf.formula.term == term and 
+                    lf.state == rel.z
+                    for lf in formulas
+                )
+                
+                if not exists_in_z:
+                    branch.add_formula(Existential(term), rel.z)
+                    return True
+        
+        return False
+    
+    def prove(self, formula, initial_state='w', verbose=False):
+        """Intentar probar una formula"""
+        negated = Negation(formula)
+        tableau = Tableau([(negated, initial_state)])
+        
+        if verbose:
+            print("=== INTENTO DE PRUEBA ===")
+            print(f"Formula a probar: {formula}")
+            print(f"Negacion: {negated}\n")
+            print("Tableau inicial:")
+            print(tableau)
+            print("\n" + "="*50 + "\n")
+        
+        iteration = 0
+        while iteration < self.max_iterations:
+            iteration += 1
+            
+            if verbose:
+                print(f"--- Iteracion {iteration} ---")
+            
+            applied_any = False
+            current_branches = tableau.branches[:]
+            
+            for branch in current_branches:
+                if branch.closed:
+                    continue
+                
+                if branch.check_closure():
+                    if verbose:
+                        print(f"Rama cerrada por contradiccion")
+                    continue
+                
+                # Intentar aplicar reglas normales
+                formulas = branch.get_all_formulas()
+                
+                for lf in formulas:
+                    for rule in self.rules:
+                        if rule.applies_to(lf, branch):
+                            if verbose:
+                                print(f"Aplicando {rule} a: {lf}")
+                            
+                            success = rule.apply(lf, branch, tableau)
+                            
+                            if success:
+                                self.applied_rules.append((rule, lf))
+                                applied_any = True
+                                
+                                if verbose:
+                                    print(f"Resultado:\n{tableau}\n")
+                                
+                                break
+                    
+                    if applied_any:
+                        break
+                
+                if applied_any:
+                    break
+            
+            # Si no se aplico ninguna regla, intentar restriccion existencial
+            if not applied_any:
+                if verbose:
+                    print("No hay reglas aplicables. Intentando restriccion existencial...")
+                
+                for branch in tableau.branches[:]:
+                    if not branch.closed:
+                        if self.apply_existential_restriction(branch, tableau):
+                            if verbose:
+                                print("Aplicada restriccion existencial")
+                                print(f"Resultado:\n{tableau}\n")
+                            applied_any = True
+                            break
+            
+            # Si aun no se aplico nada, terminar
+            if not applied_any:
+                if verbose:
+                    print("No hay mas reglas ni restricciones aplicables")
+                break
+            
+            # Verificar cierre
+            if tableau.is_closed():
+                if verbose:
+                    print("\n" + "="*50)
+                    print("TABLEAU CERRADO - La formula es VALIDA")
+                    print("="*50)
+                return True
+        
+        if verbose:
+            print("\n" + "="*50)
+            print("Tableau NO cerrado - La formula NO es valida")
+            print("="*50)
+            print("\nTableau final:")
+            print(tableau)
+        
+        return False
+    
+    def prove_argument(self, premises, conclusion, verbose=False):
+        """Probar un argumento: premises ⊢ conclusion"""
+        if not premises:
+            return self.prove(conclusion, verbose=verbose)
+        
+        conj = premises[0]
+        for premise in premises[1:]:
+            conj = Conjunction(conj, premise)
+        
+        argument = Conditional(conj, conclusion)
+        
+        if verbose:
+            print("=== PRUEBA DE ARGUMENTO ===")
+            print("Premisas:")
+            for i, p in enumerate(premises, 1):
+                print(f"  {i}. {p}")
+            print(f"Conclusion: {conclusion}\n")
+        
+        return self.prove(argument, verbose=verbose)
+
+
+if __name__ == "__main__":
+    print("Motor de logica subatomica listo")
+    print("Usa: from logic import parse, TableauProver")
