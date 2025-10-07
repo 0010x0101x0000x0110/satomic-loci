@@ -1290,210 +1290,39 @@ ALL_RULES = [
 
 
 # ============================================================================
-# MOTOR DE APLICACIÓN AUTOMÁTICA
+# MOTOR DE APLICACION AUTOMATICA
 # ============================================================================
 
 class TableauProver:
-    """Motor que aplica reglas automáticamente para probar fórmulas"""
+    """Motor que aplica reglas automaticamente"""
     
     def __init__(self, rules=None, max_iterations=100):
         self.rules = rules if rules else ALL_RULES
         self.max_iterations = max_iterations
-        self.applied_rules = []  # Historia de reglas aplicadas
+        self.applied_rules = []
     
-    def prove(self, formula, initial_state='w', verbose=False):
+    def apply_existential_restriction(self, branch, tableau):
         """
-        Intentar probar una fórmula
-        Retorna True si es válida (tableau cierra), False si no
+        Restriccion existencial: cuando no hay reglas aplicables,
+        para cada Qxyz existente, agregar terminos del contexto.
+        Retorna True si se aplico algo.
         """
-        # Crear tableau con la negación de la fórmula
-        negated = Negation(formula)
-        tableau = Tableau([(negated, initial_state)])
+        relations = branch.get_all_relations()
+        formulas = branch.get_all_formulas()
         
-        if verbose:
-            print("=== INTENTO DE PRUEBA ===")
-            print(f"Fórmula a probar: {formula}")
-            print(f"Negación: {negated}\n")
-            print("Tableau inicial:")
-            print(tableau)
-            print("\n" + "="*50 + "\n")
+        # Buscar relaciones Q
+        q_relations = [r for r in relations if isinstance(r, RelationQ)]
         
-        # Aplicar reglas iterativamente
-        iteration = 0
-        while iteration < self.max_iterations:
-            iteration += 1
-            
-            if verbose:
-                print(f"--- Iteración {iteration} ---")
-            
-            # Intentar aplicar reglas a todas las ramas abiertas
-            applied_any = False
-            
-            # Trabajar con copia de branches porque pueden modificarse
-            current_branches = tableau.branches[:]
-            
-            for branch in current_branches:
-                if branch.closed:
-                    continue
-                
-                # Verificar cierre antes de aplicar reglas
-                if branch.check_closure():
-                    if verbose:
-                        print(f"Rama cerrada por contradicción")
-                    continue
-                
-                # Intentar aplicar cada regla a cada fórmula
-                formulas = branch.get_all_formulas()
-                
-                for lf in formulas:
-                    for rule in self.rules:
-                        if rule.applies_to(lf, branch):
-                            if verbose:
-                                print(f"Aplicando {rule} a: {lf}")
-                            
-                            # Aplicar la regla
-                            success = rule.apply(lf, branch, tableau)
-                            
-                            if success:
-                                self.applied_rules.append((rule, lf))
-                                applied_any = True
-                                
-                                if verbose:
-                                    print(f"Resultado:\n{tableau}\n")
-                                
-                                # Después de aplicar una regla, salir
-                                # para recalcular las ramas
-                                break
-                    
-                    if applied_any:
-                        break
-                
-                if applied_any:
-                    break
-            
-            # Si no se aplicó ninguna regla, terminar
-            if not applied_any:
-                if verbose:
-                    print("No hay más reglas aplicables")
-                break
-            
-            # Verificar si el tableau está cerrado
-            if tableau.is_closed():
-                if verbose:
-                    print("\n" + "="*50)
-                    print("¡TABLEAU CERRADO! La fórmula es VÁLIDA")
-                    print("="*50)
-                return True
+        if not q_relations:
+            return False
         
-        # Si llegamos aquí, el tableau no cerró
-        if verbose:
-            print("\n" + "="*50)
-            print("Tableau NO cerrado. La fórmula NO es válida")
-            print("="*50)
-            print("\nTableau final:")
-            print(tableau)
-        
-        return False
-    
-    def prove_argument(self, premises, conclusion, verbose=False):
-        """
-        Probar un argumento: premises ⊢ conclusion
-        Construye (premises[0] ∧ premises[1] ∧ ... ∧ premises[n]) → conclusion
-        """
-        if not premises:
-            return self.prove(conclusion, verbose=verbose)
-        
-        # Construir conjunción de premisas
-        conj = premises[0]
-        for premise in premises[1:]:
-            conj = Conjunction(conj, premise)
-        
-        # Construir condicional
-        argument = Conditional(conj, conclusion)
-        
-        if verbose:
-            print("=== PRUEBA DE ARGUMENTO ===")
-            print("Premisas:")
-            for i, p in enumerate(premises, 1):
-                print(f"  {i}. {p}")
-            print(f"Conclusión: {conclusion}\n")
-        
-        return self.prove(argument, verbose=verbose)
-
-
-# ============================================================================
-# EJEMPLOS Y PRUEBAS
-# ============================================================================
-
-def test_barbara():
-    """Probar el silogismo Barbara"""
-    print("="*60)
-    print("PRUEBA: SILOGISMO BARBARA")
-    print("="*60)
-    
-    # [A]B, [B]C ⊢ [A]C
-    A = AtomicTerm('A')
-    B = AtomicTerm('B')
-    C = AtomicTerm('C')
-    
-    premise1 = Universal(A, B)  # Todo A es B
-    premise2 = Universal(B, C)  # Todo B es C
-    conclusion = Universal(A, C)  # Todo A es C
-    
-    prover = TableauProver()
-    result = prover.prove_argument([premise1, premise2], conclusion, verbose=True)
-    
-    print(f"\n✓ Barbara es {'VÁLIDO' if result else 'INVÁLIDO'}")
-    return result
-
-
-def test_simple_particular():
-    """Probar una fórmula particular simple"""
-    print("\n" + "="*60)
-    print("PRUEBA: FÓRMULA PARTICULAR SIMPLE")
-    print("="*60)
-    
-    # <A>B
-    A = AtomicTerm('A')
-    B = AtomicTerm('B')
-    
-    formula = Particular(A, B)
-    
-    prover = TableauProver()
-    result = prover.prove(formula, verbose=True)
-    
-    print(f"\n✓ <A>B es {'VÁLIDO' if result else 'INVÁLIDO'}")
-    return result
-
-
-def test_law_of_excluded_middle():
-    """Probar la ley del tercero excluido: A ∨ ¬A"""
-    print("\n" + "="*60)
-    print("PRUEBA: LEY DEL TERCERO EXCLUIDO")
-    print("="*60)
-    
-    A = AtomicTerm('A')
-    formula = Disjunction(Existential(A), Negation(Existential(A)))
-    
-    prover = TableauProver()
-    result = prover.prove(formula, verbose=True)
-    
-    print(f"\n✓ A ∨ ¬A es {'VÁLIDO' if result else 'INVÁLIDO'}")
-    return result
-
-
-if __name__ == "__main__":
-    # Ejecutar pruebas solo si se ejecuta directamente
-    print("Ejecutando pruebas del sistema...\n")
-    test_barbara()
-    test_simple_particular()
-    test_law_of_excluded_middle()
-    
-    print("\n" + "="*60)
-    print("Sistema listo. Para usar la interfaz web, ejecuta:")
-    print("  streamlit run app.py")
-    print("="*60)
-terms_in_context.add(f.predicate)
+        # Extraer todos los terminos que aparecen en formulas categoriales
+        terms_in_context = set()
+        for lf in formulas:
+            f = lf.formula
+            if isinstance(f, Universal):
+                terms_in_context.add(f.subject)
+                terms_in_context.add(f.predicate)
             elif isinstance(f, Particular):
                 terms_in_context.add(f.subject)
                 terms_in_context.add(f.predicate)
@@ -1510,6 +1339,7 @@ terms_in_context.add(f.predicate)
                 )
                 
                 if not exists_in_y:
+                    # Agregar el termino en el estado y
                     branch.add_formula(Existential(term), rel.y)
                     return True
                 
@@ -1522,6 +1352,7 @@ terms_in_context.add(f.predicate)
                 )
                 
                 if not exists_in_z:
+                    # Agregar el termino en el estado z
                     branch.add_formula(Existential(term), rel.z)
                     return True
         
@@ -1645,4 +1476,77 @@ terms_in_context.add(f.predicate)
 
 if __name__ == "__main__":
     print("Motor de logica subatomica listo")
-    print("Usa: from logic import parse, TableauProver")
+    print("Importa desde otro archivo para usar")
+
+# ============================================================================
+# EJEMPLOS Y PRUEBAS
+# ============================================================================
+
+def test_barbara():
+    """Probar el silogismo Barbara"""
+    print("="*60)
+    print("PRUEBA: SILOGISMO BARBARA")
+    print("="*60)
+    
+    # [A]B, [B]C ⊢ [A]C
+    A = AtomicTerm('A')
+    B = AtomicTerm('B')
+    C = AtomicTerm('C')
+    
+    premise1 = Universal(A, B)  # Todo A es B
+    premise2 = Universal(B, C)  # Todo B es C
+    conclusion = Universal(A, C)  # Todo A es C
+    
+    prover = TableauProver()
+    result = prover.prove_argument([premise1, premise2], conclusion, verbose=True)
+    
+    print(f"\n✓ Barbara es {'VÁLIDO' if result else 'INVÁLIDO'}")
+    return result
+
+
+def test_simple_particular():
+    """Probar una fórmula particular simple"""
+    print("\n" + "="*60)
+    print("PRUEBA: FÓRMULA PARTICULAR SIMPLE")
+    print("="*60)
+    
+    # <A>B
+    A = AtomicTerm('A')
+    B = AtomicTerm('B')
+    
+    formula = Particular(A, B)
+    
+    prover = TableauProver()
+    result = prover.prove(formula, verbose=True)
+    
+    print(f"\n✓ <A>B es {'VÁLIDO' if result else 'INVÁLIDO'}")
+    return result
+
+
+def test_law_of_excluded_middle():
+    """Probar la ley del tercero excluido: A ∨ ¬A"""
+    print("\n" + "="*60)
+    print("PRUEBA: LEY DEL TERCERO EXCLUIDO")
+    print("="*60)
+    
+    A = AtomicTerm('A')
+    formula = Disjunction(Existential(A), Negation(Existential(A)))
+    
+    prover = TableauProver()
+    result = prover.prove(formula, verbose=True)
+    
+    print(f"\n✓ A ∨ ¬A es {'VÁLIDO' if result else 'INVÁLIDO'}")
+    return result
+
+
+if __name__ == "__main__":
+    # Ejecutar pruebas solo si se ejecuta directamente
+    print("Ejecutando pruebas del sistema...\n")
+    test_barbara()
+    test_simple_particular()
+    test_law_of_excluded_middle()
+    
+    print("\n" + "="*60)
+    print("Sistema listo. Para usar la interfaz web, ejecuta:")
+    print("  streamlit run app.py")
+    print("="*60)
